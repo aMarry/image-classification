@@ -11,7 +11,7 @@
 # 请运行以下单元，以下载 [CIFAR-10 数据集（Python版）](https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz)。
 # 
 
-# In[1]:
+# In[2]:
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL THAT IS BELOW THIS LINE
@@ -75,7 +75,7 @@ tests.test_folder_path(cifar10_dataset_folder_path)
 # 问问你自己：“可能的标签有哪些？”、“图片数据的值范围是多少？”、“标签是按顺序排列，还是随机排列的？”。思考类似的问题，有助于你预处理数据，并使预测结果更准确。
 # 
 
-# In[2]:
+# In[3]:
 
 get_ipython().magic('matplotlib inline')
 get_ipython().magic("config InlineBackend.figure_format = 'retina'")
@@ -96,7 +96,7 @@ helper.display_stats(cifar10_dataset_folder_path, batch_id, sample_id)
 # 在下面的单元中，实现 `normalize` 函数，传入图片数据 `x`，并返回标准化 Numpy 数组。值应该在 0 到 1 的范围内（含 0 和 1）。返回对象应该和 `x` 的形状一样。
 # 
 
-# In[3]:
+# In[4]:
 
 def normalize(x):
     """
@@ -127,7 +127,7 @@ tests.test_normalize(normalize)
 # 提示：不要重复发明轮子。
 # 
 
-# In[4]:
+# In[5]:
 
 def one_hot_encode(x):
     """
@@ -158,7 +158,7 @@ tests.test_one_hot_encode(one_hot_encode)
 # 运行下方的代码单元，将预处理所有 CIFAR-10 数据，并保存到文件中。下面的代码还使用了 10% 的训练数据，用来验证。
 # 
 
-# In[5]:
+# In[6]:
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -172,7 +172,7 @@ helper.preprocess_and_save_data(cifar10_dataset_folder_path, normalize, one_hot_
 # 这是你的第一个检查点。如果你什么时候决定再回到该记事本，或需要重新启动该记事本，你可以从这里开始。预处理的数据已保存到本地。
 # 
 
-# In[6]:
+# In[7]:
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -185,12 +185,12 @@ import helper
 valid_features, valid_labels = pickle.load(open('preprocess_validation.p', mode='rb'))
 
 
-# In[7]:
+# In[8]:
 
 valid_labels[122]
 
 
-# In[8]:
+# In[9]:
 
 valid_features
 
@@ -226,7 +226,7 @@ valid_features
 # 
 # 注意：TensorFlow 中的 `None` 表示形状可以是动态大小。
 
-# In[9]:
+# In[10]:
 
 import tensorflow as tf
 
@@ -237,7 +237,7 @@ def neural_net_image_input(image_shape):
     : return: Tensor for image input.
     """
     # TODO: Implement Function
-    x = tf.placeholder(tf.float32, [None, image_shape[0],image_shape[0], image_shape[2]],name = 'x')
+    x = tf.placeholder(tf.float32, [None, image_shape[0],image_shape[1], image_shape[2]],name = 'x')
     return x
 
 
@@ -286,7 +286,7 @@ tests.test_nn_keep_prob_inputs(neural_net_keep_prob_input)
 # **注意**：对于**此层**，**请勿使用** [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers)，但是仍然可以使用 TensorFlow 的 [Neural Network](https://www.tensorflow.org/api_docs/python/tf/nn) 包。对于所有**其他层**，你依然可以使用快捷方法。
 # 
 
-# In[10]:
+# In[11]:
 
 def conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ksize, pool_strides):
     """
@@ -300,15 +300,15 @@ def conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ks
     : return: A tensor that represents convolution and max pooling of x_tensor
     """
     a = x_tensor.get_shape()[3]
-    weight = tf.Variable(tf.truncated_normal([conv_ksize[0], conv_ksize[0],int(a), conv_num_outputs], stddev=0.1))
+    weight = tf.Variable(tf.truncated_normal([conv_ksize[0], conv_ksize[1],int(a), conv_num_outputs], stddev=0.1))
     
-    biases = tf.Variable(tf.constant(0.1, shape =[conv_num_outputs]))
+    biases = tf.Variable(tf.zeros([conv_num_outputs]))
     
-    conv = tf.nn.conv2d(x_tensor, weight, strides=[1,conv_strides[0],conv_strides[0],1], padding = 'SAME')
+    conv = tf.nn.conv2d(x_tensor, weight, strides=[1,conv_strides[0],conv_strides[1],1], padding = 'SAME')
     conv = tf.nn.bias_add(conv, biases)
     conv = tf.nn.relu(conv)
     
-    pool = tf.nn.max_pool(conv,ksize=[1,pool_ksize[0],pool_ksize[0],1] ,strides=[1,pool_strides[0],pool_strides[0],1], padding = 'SAME')
+    pool = tf.nn.max_pool(conv,ksize=[1,pool_ksize[0],pool_ksize[1],1] ,strides=[1,pool_strides[0],pool_strides[1],1], padding = 'SAME')
     # TODO: Implement Function
     return pool
 
@@ -324,13 +324,13 @@ tests.test_con_pool(conv2d_maxpool)
 # 实现 `flatten` 函数，将 `x_tensor` 的维度从四维张量（4-D tensor）变成二维张量。输出应该是形状（*部分大小（Batch Size）*，*扁平化图片大小（Flattened Image Size）*）。快捷方法：对于此层，你可以使用 [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers) 包中的类。如果你想要更大挑战，可以仅使用其他 TensorFlow 程序包。
 # 
 
-# In[11]:
+# In[12]:
 
 import tensorflow as tf
 from tensorflow.contrib.layers import flatten
 
 
-# In[12]:
+# In[13]:
 
 def flatten(x_tensor):
     """
@@ -358,7 +358,7 @@ tests.test_flatten(flatten)
 # 
 # 实现 `fully_conn` 函数，以向 `x_tensor` 应用完全连接的层级，形状为（*部分大小（Batch Size）*，*num_outputs*）。快捷方法：对于此层，你可以使用 [TensorFlow Layers](https://www.tensorflow.org/api_docs/python/tf/layers) 或 [TensorFlow Layers (contrib)](https://www.tensorflow.org/api_guides/python/contrib.layers) 包中的类。如果你想要更大挑战，可以仅使用其他 TensorFlow 程序包。
 
-# In[13]:
+# In[14]:
 
 def fully_conn(x_tensor, num_outputs):
     """
@@ -384,7 +384,7 @@ tests.test_fully_conn(fully_conn)
 # 
 # **注意**：该层级不应应用 Activation、softmax 或交叉熵（cross entropy）。
 
-# In[14]:
+# In[15]:
 
 def output(x_tensor, num_outputs):
     """
@@ -394,7 +394,7 @@ def output(x_tensor, num_outputs):
     : return: A 2-D tensor where the second dimension is num_outputs.
     """
     # TODO: Implement Function
-    fc = tf.contrib.layers.fully_connected(x_tensor, num_outputs)
+    fc = tf.contrib.layers.fully_connected(x_tensor, num_outputs,activation_fn=None)
     return fc
 
 
@@ -415,7 +415,7 @@ tests.test_output(output)
 # * 返回输出
 # * 使用 `keep_prob` 向模型中的一个或多个层应用 [TensorFlow 的 Dropout](https://www.tensorflow.org/api_docs/python/tf/nn/dropout)
 
-# In[64]:
+# In[16]:
 
 def conv_net(x, keep_prob):
     """
@@ -428,11 +428,11 @@ def conv_net(x, keep_prob):
     #    Play around with different number of outputs, kernel size and stride
     # Function Definition from Above:
     #    conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ksize, pool_strides)
-    conv1 = conv2d_maxpool(x, 32, (3,3), (2,2),(2,2),(2,2))
+    conv1 = conv2d_maxpool(x, 32, (3,3), (1,1),(2,2),(2,2))
     
-    #conv2 = conv2d_maxpool(conv1, 16,(3,3), (2,2),(2,2),(2,2))
+    conv2 = conv2d_maxpool(conv1, 64,(3,3), (1,1),(2,2),(2,2))
     
-    conv2 = flatten(conv1)
+    conv2 = flatten(conv2)
     # TODO: Apply a Flatten Layer
     # Function Definition from Above:
     #   flatten(x_tensor)
@@ -442,16 +442,16 @@ def conv_net(x, keep_prob):
     #    Play around with different number of outputs
     # Function Definition from Above:
     #   fully_conn(x_tensor, num_outputs)
-    fc1 = fully_conn(conv2, 128)
-    fc1 = tf.nn.relu(fc1)
+    fc1 = fully_conn(conv2, 512)
     fc1 = tf.nn.dropout(fc1, keep_prob)
     
-    fc2 = fully_conn(fc1, 80)
+    fc2 = fully_conn(fc1, 256)
+    fc3 = fully_conn(fc2, 128)
     # TODO: Apply an Output Layer
     #    Set this to the number of classes
     # Function Definition from Above:
     #   output(x_tensor, num_outputs)
-    logits = output(fc2, 10)
+    logits = output(fc3, 10)
     
     # TODO: return output
     return logits
@@ -505,7 +505,7 @@ tests.test_conv_net(conv_net)
 # 注意：不需要返回任何内容。该函数只是用来优化神经网络。
 # 
 
-# In[65]:
+# In[17]:
 
 def train_neural_network(session, optimizer, keep_probability, feature_batch, label_batch):
     """
@@ -532,7 +532,7 @@ tests.test_train_nn(train_neural_network)
 # 实现函数 `print_stats` 以输出损失和验证准确率。使用全局变量 `valid_features` 和 `valid_labels` 计算验证准确率。使用保留率 `1.0` 计算损失和验证准确率（loss and validation accuracy）。
 # 
 
-# In[66]:
+# In[18]:
 
 def print_stats(session, feature_batch, label_batch, cost, accuracy):
     """
@@ -571,11 +571,11 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy):
 #  * ...
 # * 设置 `keep_probability` 表示使用丢弃时保留节点的概率
 
-# In[72]:
+# In[19]:
 
 # TODO: Tune Parameters
 epochs =300
-batch_size = 32
+batch_size = 128
 keep_probability =0.5
 
 
@@ -584,7 +584,7 @@ keep_probability =0.5
 # 我们先用单个部分，而不是用所有的 CIFAR-10 批次训练神经网络。这样可以节省时间，并对模型进行迭代，以提高准确率。最终验证准确率达到 50% 或以上之后，在下一部分对所有数据运行模型。
 # 
 
-# In[70]:
+# In[20]:
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -595,7 +595,7 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     
     accuracy_max = 0.0
-    max_ep = 30
+    max_ep = 15
     i = 0
     # Training cycle
     for epoch in range(epochs):
@@ -618,7 +618,7 @@ with tf.Session() as sess:
 # 
 # 现在，单个 CIFAR-10 部分的准确率已经不错了，试试所有五个部分吧。
 
-# In[73]:
+# In[22]:
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
@@ -631,7 +631,7 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     
     accuracy_max = 0.0
-    max_ep = 30
+    max_ep = 20
     i = 0
     # Training cycle
     for epoch in range(epochs):
@@ -641,7 +641,9 @@ with tf.Session() as sess:
             for batch_features, batch_labels in helper.load_preprocess_training_batch(batch_i, batch_size):
                 train_neural_network(sess, optimizer, keep_probability, batch_features, batch_labels)
             print('Epoch {:>2}, CIFAR-10 Batch {}:  '.format(epoch + 1, batch_i), end='')
+            #返回当前学习率
             current_acc = print_stats(sess, batch_features, batch_labels, cost, accuracy)
+            #超过20次迭代，学习率不增加，则不再进行训练    ？？ 为什么没有跳出循环
             if(accuracy_max <= current_acc):
                 accuracy_max = current_acc
                 i = 0
