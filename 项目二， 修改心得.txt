@@ -1,0 +1,36 @@
+one-hot:
+
+	from sklearn.preprocessing import LabelBinarizer 
+	label_binarizer = LabelBinarizer() 
+	label_binarizer.fit(range(10))
+	
+	然后在函数内部返回 label_binarizer.transform(x)，不需要对x进行reshape()。
+	这样把创建的编码映射放在函数外，避免每次调用函数都创建编码映射。
+
+
+weight & biase 参数初始化
+
+	weight = tf.Variable(tf.truncated_normal([conv_ksize[0], conv_ksize[1],int(a), conv_num_outputs], stddev=0.1))  
+    biases = tf.Variable(tf.zeros([conv_num_outputs]))
+
+    代码上stddev设置与否算是优化实现，如果权重没有进行较好的初始化（比如使用较大的值初始化）会导致神经网络每一次更新的weights值比较乱，进行训练的时候计算的gradients会比较大，从而导致神经网络无法拟合，这样神经网络很容易训练失败。
+
+	希望权重非常接近零但又不为零，tf.truncated_normal函数预设的标准差stddev = 1，改成更小的数值如0.05或0.1，主要是可以加快模型的收敛。
+
+	bias的初始化，建议使用tf.zeros来初始化为零值，这篇文章给了比较好的讲解：https://stackoverflow.com/questions/2480650/role-of-bias-in-neural-networks
+
+
+output层 
+	
+	fc = tf.contrib.layers.fully_connected(x_tensor, num_outputs,activation_fn=None)
+	   output函数不添加非线性激活函数以保持线性输出。
+	Tensorflow提供的全链接函数tf.contrib.layers.fully_connected预设了使用relu 作为非线性激活函数, 所以这里如果使用tf.contrib.layers.fully_connected 需要把激活函数设为None。 
+
+	全连接层就不用activation_fn=None
+
+
+卷积层
+
+	每一层的计算节点参数的设定方面建议以2的n次幂形式设定，便于tensorflow优化计算。在项目推荐的使用多卷积层和全链接层的设定下，卷积的输出通道数可以设为如 32 - 64 - 128 这样逐渐递增的形式；全连接层的节点数可以考虑类似 512 - 256 -128 的设定。在你实现的基础上，提高下层数和计算节点值，增加下神经网络的学习能力，准确率应该比较容易提高。
+	
+    卷积核设置合理，卷积步长建议都设为(1,1)，主要是考虑到图像单元数据量较小，即像素比较低，避免大的步长滤掉过多学习内容。

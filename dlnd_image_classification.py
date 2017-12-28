@@ -110,8 +110,8 @@ def normalize(x):
     grayscale_min = 0
     grayscale_max = 255
     
-    a += ((x - grayscale_min)*(b - a))/(grayscale_max - grayscale_min)
-    return a
+    return ((x - grayscale_min)*(b - a))/(grayscale_max - grayscale_min)
+    
 
 
 """
@@ -141,6 +141,13 @@ def one_hot_encode(x):
     onehot.fit([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     a = onehot.transform(x)
     return a
+
+	# from sklearn.preprocessing import LabelBinarizer 
+	# label_binarizer = LabelBinarizer() 
+	# label_binarizer.fit(range(10))
+
+
+
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL THAT IS BELOW THIS LINE
@@ -183,16 +190,6 @@ import helper
 
 # Load the Preprocessed Validation data
 valid_features, valid_labels = pickle.load(open('preprocess_validation.p', mode='rb'))
-
-
-# In[8]:
-
-valid_labels[122]
-
-
-# In[9]:
-
-valid_features
 
 
 # ## 构建网络
