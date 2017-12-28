@@ -665,7 +665,7 @@ with tf.Session() as sess:
 # 
 # 利用测试数据集测试你的模型。这将是最终的准确率。你的准确率应该高于 50%。如果没达到，请继续调整模型结构和参数。
 
-# In[76]:
+# In[23]:
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL
